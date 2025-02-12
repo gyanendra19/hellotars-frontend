@@ -2,6 +2,8 @@ import Dashboard from "./components/Dashboard";
 import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import axios from "axios";
+import { Toaster } from 'react-hot-toast';
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,7 +13,7 @@ function App() {
       const token = localStorage.getItem("token");
       if (token) {
         const verifyData = await axios.get(
-          `http://localhost:5000/api/auth/verify/${token}`
+          `https://5pqs5m-5000.csb.app/api/auth/verify/${token}`
         );
         console.log(verifyData);
         if (verifyData.data.message === "valid") {
@@ -29,6 +31,7 @@ function App() {
 
   return (
     <>
+      <Toaster />
       {isAuthenticated ? (
         <Dashboard />
       ) : (

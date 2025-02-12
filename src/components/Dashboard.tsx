@@ -19,6 +19,7 @@ import axios from "axios";
 import { formatDate } from "../utils/formatDate";
 import { fetchNotesFromDb, fetchUserFromDb } from "../lib/fetchData";
 import { handleSearchNotes, sortNotes } from "../lib/sortingAndSearching";
+import { toast } from "react-hot-toast";
 
 export interface NoteType {
   _id: string;
@@ -52,7 +53,21 @@ export default function Dashboard() {
   const recognitionRef = useRef<any>(null);
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<NoteType[]>([]);
+  const [editTitle, setEditTitle] = useState(false);
   const [sidebarButton, setSidebarButton] = useState("Home");
+  const [loading, setLoading] = useState(false);
+
+  // fetching user data from db
+  useEffect(() => {
+    fetchUserFromDb(setUser);
+  }, []);
+
+  //fetching notes data from db
+  useEffect(() => {
+    if (user) {
+      fetchNotesFromDb(setNotes, user, setLoading);
+    }
+  }, [user]);
 
   // set favourite notes
   useEffect(() => {
@@ -63,23 +78,11 @@ export default function Dashboard() {
     }
   }, [sidebarButton]);
 
-  // fetching user data from db
-  useEffect(() => {
-    fetchUserFromDb(setUser);
-  }, []);
-
-  //fetching notes data from db
-  useEffect(() => {
-    if (user) {
-      fetchNotesFromDb(setNotes, user);
-    }
-  }, [user]);
-
   // saving notes data to mongodb
   const saveNotesToDb = async (isAudio: boolean) => {
     try {
       const email = localStorage.getItem("email");
-      await axios.post(`http://localhost:5000/api/notes`, {
+      await axios.post(`https://5pqs5m-5000.csb.app/api/notes`, {
         title: "New Note",
         content: notesInput,
         type: isAudio ? "audio" : "text",
@@ -98,17 +101,26 @@ export default function Dashboard() {
     field: string,
     value: string | boolean
   ) => {
-    setNotes((prevNotes) =>
-      prevNotes.map((note) =>
-        noteId === note._id ? { ...note, [field]: value } : note
-      )
-    );
-    setNoteToOpen((prev) => ({ ...prev!, [field]: value }));
-    await axios.put(`http://localhost:5000/api/notes`, {
-      noteId,
-      field,
-      value,
-    });
+    try {
+      setNoteToOpen((prev) => ({ ...prev!, [field]: value }));
+      setLoading(true);
+      await axios.put(`https://5pqs5m-5000.csb.app/api/notes`, {
+        noteId,
+        field,
+        value,
+      });
+      setNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          noteId === note._id ? { ...note, [field]: value } : note
+        )
+      );
+      setLoading(false);
+      setEditTitle(false);
+      toast.success("Updated successfully");
+    } catch (err) {
+      toast.error("Something went wrong");
+      setLoading(false);
+    }
   };
 
   // adding notes
@@ -128,6 +140,7 @@ export default function Dashboard() {
       },
     ]);
 
+    toast.success("Note Added");
     if (isRecording) {
       saveNotesToDb(true);
       stopRecording(recognitionRef);
@@ -140,8 +153,16 @@ export default function Dashboard() {
 
   // deleting notes
   const deleteNotes = async (noteId: string) => {
-    setNotes(notes.filter((note) => note._id !== noteId));
-    await axios.delete(`http://localhost:5000/api/notes/${noteId}`);
+    try {
+      setNotes(notes.filter((note) => note._id !== noteId));
+      setLoading(true);
+      await axios.delete(`https://5pqs5m-5000.csb.app/api/notes/${noteId}`);
+      setLoading(false);
+      toast.success("Deleted note");
+    } catch (err) {
+      toast.error("Error deleting note");
+      console.log(err);
+    }
   };
 
   // finding note to open in the modal
@@ -152,10 +173,17 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-white overflow-y-hidden">
+      {loading && (
+        <div className="fixed inset-0 z-[1100] flex justify-center items-center text-2xl w-full h-full bg-black/20">
+          Loading....
+        </div>
+      )}
       <NoteModal
         note={noteToOpen!}
         isOpen={isModalOpen}
         onClose={setIsModalOpen}
+        editTitle={editTitle}
+        setEditTitle={setEditTitle}
         handleEdit={editNote}
       />
       {/* Sidebar */}

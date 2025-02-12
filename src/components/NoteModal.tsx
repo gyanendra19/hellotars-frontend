@@ -7,6 +7,7 @@ import {
   Pause,
   Star,
   PenLine,
+  Check,
 } from "lucide-react";
 import { NoteType } from "./Dashboard";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,10 +17,19 @@ interface NoteModalProps {
   note: NoteType;
   isOpen: boolean;
   onClose: (isOpen: boolean) => void;
+  editTitle: boolean;
+  setEditTitle: (editTitle: boolean) => void;
   handleEdit: (noteId: string, field: string, value: string | boolean) => void;
 }
 
-const NoteModal = ({ note, isOpen, onClose, handleEdit }: NoteModalProps) => {
+const NoteModal = ({
+  note,
+  isOpen,
+  onClose,
+  editTitle,
+  setEditTitle,
+  handleEdit,
+}: NoteModalProps) => {
   if (!isOpen) return null;
   const [speechDuration, setSpeechDuration] = useState<number>(10000);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -29,8 +39,8 @@ const NoteModal = ({ note, isOpen, onClose, handleEdit }: NoteModalProps) => {
   const startTimeRef = useRef<number>(0);
   const previousTimeRef = useRef<number>(0);
   const [editContent, setEditContent] = useState(false);
-  const [editTitle, setEditTitle] = useState(false);
-  const [selectedFile, setSelectedFile] = useState('');
+  const [selectedFile, setSelectedFile] = useState("");
+  const [titleContent, setTitleContent] = useState<string | null>(null);
 
   // animation of the audio play
   const animate = useCallback(
@@ -125,9 +135,8 @@ const NoteModal = ({ note, isOpen, onClose, handleEdit }: NoteModalProps) => {
   const handleFileChange = (event: any, noteId: string) => {
     const file = event.target.files[0]; // Get the first selected file
     setSelectedFile(URL.createObjectURL(file));
-    handleEdit(noteId, 'imageUrl', URL.createObjectURL(file))
+    handleEdit(noteId, "imageUrl", URL.createObjectURL(file));
   };
-  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-[1000] bg-opacity-50">
@@ -139,13 +148,25 @@ const NoteModal = ({ note, isOpen, onClose, handleEdit }: NoteModalProps) => {
               <input
                 type="text"
                 className="focus:outline-none w-[300px] text-lg font-semibold"
-                value={note.title}
-                onChange={(e) => handleEdit(note._id, "title", e.target.value)}
+                value={titleContent !== null ? titleContent : note.title}
+                onChange={(e) => setTitleContent(e.target.value)}
               />
             ) : (
               <h2 className="text-lg font-semibold">{note.title}</h2>
             )}
-            <PenLine className="cursor-pointer" onClick={() => setEditTitle(true)} size={20} />
+            {editTitle ? (
+              <Check
+                className="cursor-pointer"
+                onClick={() => handleEdit(note._id, "title", titleContent!)}
+                size={20}
+              />
+            ) : (
+              <PenLine
+                className="cursor-pointer"
+                onClick={() => setEditTitle(true)}
+                size={20}
+              />
+            )}
           </div>
           <div className="flex items-center">
             {editContent && (
@@ -276,8 +297,15 @@ const NoteModal = ({ note, isOpen, onClose, handleEdit }: NoteModalProps) => {
                 />
               </div>
               <button className="w-24 h-24 bg-gray-100 flex flex-col items-center justify-center rounded-lg">
-                <label htmlFor="upload-image" className="text-md text-gray-600">+Image</label>
-                <input onChange={(e) => handleFileChange(e, note._id)} className="hidden" type="file" id="upload-image" />
+                <label htmlFor="upload-image" className="text-md text-gray-600">
+                  +Image
+                </label>
+                <input
+                  onChange={(e) => handleFileChange(e, note._id)}
+                  className="hidden"
+                  type="file"
+                  id="upload-image"
+                />
               </button>
             </div>
 

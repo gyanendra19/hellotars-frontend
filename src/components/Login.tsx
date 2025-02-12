@@ -9,7 +9,7 @@ const Login = ({setIsAuthenticated}: {setIsAuthenticated: (isAuthenticated: bool
     e.preventDefault();
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/auth/signup`,
+        `https://5pqs5m-5000.csb.app/api/auth/signup`,
         {
           email,
           password,
@@ -58,7 +58,7 @@ const Login = ({setIsAuthenticated}: {setIsAuthenticated: (isAuthenticated: bool
             type="submit"
             className="w-full mt-6 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
           >
-            Login
+            Signup
           </button>
         </form>
       </div>
