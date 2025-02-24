@@ -10,7 +10,7 @@ import {
   Check,
 } from "lucide-react";
 import { NoteType } from "./Dashboard";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatDate } from "../utils/formatDate";
 
 interface NoteModalProps {
@@ -31,68 +31,68 @@ const NoteModal = ({
   handleEdit,
 }: NoteModalProps) => {
   if (!isOpen) return null;
-  const [speechDuration, setSpeechDuration] = useState<number>(10000);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  // const [speechDuration, setSpeechDuration] = useState<number>(10000);
+  // const [isPlaying, setIsPlaying] = useState(false);
+  // const [progress, setProgress] = useState(0);
+  // const [currentTime, setCurrentTime] = useState(0);
+  // const startTimeRef = useRef<number>(0);
+  // const previousTimeRef = useRef<number>(0);
   const animationRef = useRef<number | undefined>(undefined);
-  const startTimeRef = useRef<number>(0);
-  const previousTimeRef = useRef<number>(0);
   const [editContent, setEditContent] = useState(false);
   const [selectedFile, setSelectedFile] = useState("");
   const [titleContent, setTitleContent] = useState<string | null>(null);
 
   // animation of the audio play
-  const animate = useCallback(
-    (timestamp: number) => {
-      if (!startTimeRef.current) {
-        startTimeRef.current = timestamp - (previousTimeRef.current || 0);
-      }
+  // const animate = useCallback(
+  //   (timestamp: number) => {
+  //     if (!startTimeRef.current) {
+  //       startTimeRef.current = timestamp - (previousTimeRef.current || 0);
+  //     }
 
-      const elapsed = timestamp - startTimeRef.current;
-      setCurrentTime(elapsed);
+  //     const elapsed = timestamp - startTimeRef.current;
+  //     setCurrentTime(elapsed);
 
-      const newProgress = Math.min((elapsed / speechDuration) * 100, 100);
-      setProgress(newProgress);
+  //     const newProgress = Math.min((elapsed / speechDuration) * 100, 100);
+  //     setProgress(newProgress);
 
-      if (elapsed < speechDuration) {
-        animationRef.current = window.requestAnimationFrame(() =>
-          animate(speechDuration)
-        );
-      } else {
-        setIsPlaying(false);
-        startTimeRef.current = 0;
-        previousTimeRef.current = 0;
-        setCurrentTime(speechDuration);
-      }
-    },
-    [speechDuration]
-  );
+  //     if (elapsed < speechDuration) {
+  //       animationRef.current = window.requestAnimationFrame(() =>
+  //         animate(speechDuration)
+  //       );
+  //     } else {
+  //       setIsPlaying(false);
+  //       startTimeRef.current = 0;
+  //       previousTimeRef.current = 0;
+  //       setCurrentTime(speechDuration);
+  //     }
+  //   },
+  //   [speechDuration]
+  // );
 
   // toggling of the audio
-  const togglePlay = useCallback(() => {
-    if (isPlaying) {
-      window.speechSynthesis.pause();
-      setIsPlaying(false);
-      if (animationRef.current) {
-        window.cancelAnimationFrame(animationRef.current);
-      }
-      window.speechSynthesis.cancel();
-      previousTimeRef.current = currentTime;
-    } else {
-      if (progress >= 5) {
-        setProgress(0);
-        setCurrentTime(0);
-        startTimeRef.current = 0;
-        previousTimeRef.current = 0;
-        window.speechSynthesis.resume();
-      }
-      setIsPlaying(true);
-      animationRef.current = window.requestAnimationFrame(() =>
-        animate(speechDuration)
-      );
-    }
-  }, [isPlaying, progress, currentTime, animate]);
+  // const togglePlay = useCallback(() => {
+  //   if (isPlaying) {
+  //     window.speechSynthesis.pause();
+  //     setIsPlaying(false);
+  //     if (animationRef.current) {
+  //       window.cancelAnimationFrame(animationRef.current);
+  //     }
+  //     window.speechSynthesis.cancel();
+  //     previousTimeRef.current = currentTime;
+  //   } else {
+  //     if (progress >= 5) {
+  //       setProgress(0);
+  //       setCurrentTime(0);
+  //       startTimeRef.current = 0;
+  //       previousTimeRef.current = 0;
+  //       window.speechSynthesis.resume();
+  //     }
+  //     setIsPlaying(true);
+  //     animationRef.current = window.requestAnimationFrame(() =>
+  //       animate(speechDuration)
+  //     );
+  //   }
+  // }, [isPlaying, progress, currentTime, animate]);
 
   // Cleanup animation frame on unmount
   useEffect(() => {
@@ -104,31 +104,31 @@ const NoteModal = ({
   }, []);
 
   // format seconds and milliseconds
-  const formatTime = useCallback((ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const decimals = Math.floor((ms % 1000) / 10);
-    return `${seconds.toString().padStart(2, "0")}.${decimals
-      .toString()
-      .padStart(2, "0")}`;
-  }, []);
+  // const formatTime = useCallback((ms: number) => {
+  //   const seconds = Math.floor(ms / 1000);
+  //   const decimals = Math.floor((ms % 1000) / 10);
+  //   return `${seconds.toString().padStart(2, "0")}.${decimals
+  //     .toString()
+  //     .padStart(2, "0")}`;
+  // }, []);
 
   // finding the estimated time of the audio
-  const estimateDuration = (text: string, rate: number) => {
-    const words = text.split(" ").length; // Count the number of words in the text
-    const estimatedDuration = (words / rate) * 1000; // Estimate duration in seconds
-    return estimatedDuration;
-  };
+  // const estimateDuration = (text: string, rate: number) => {
+  //   const words = text.split(" ").length; // Count the number of words in the text
+  //   const estimatedDuration = (words / rate) * 1000; // Estimate duration in seconds
+  //   return estimatedDuration;
+  // };
 
   // handling text to speech logic
   const handleTextToSpeech = (text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(utterance);
 
-    const rate = utterance.rate; // Get the rate (default is 1.0)
+    // const rate = utterance.rate; // Get the rate (default is 1.0)
 
     // Estimate duration
-    const estimatedDuration = estimateDuration(text, rate);
-    setSpeechDuration(estimatedDuration); // Set the estimated duration
+    // const estimatedDuration = estimateDuration(text, rate);
+    // setSpeechDuration(estimatedDuration); // Set the estimated duration
   };
 
   // handling image
@@ -217,7 +217,7 @@ const NoteModal = ({
           <>
             <div className="mt-4">
               <div className="flex items-center gap-1">
-                {isPlaying ? (
+                {/* {isPlaying ? (
                   <button
                     onClick={() => {
                       togglePlay();
@@ -236,24 +236,21 @@ const NoteModal = ({
                   >
                     <Play size={20} />
                   </button>
-                )}
-                <div className="w-full bg-gray-300 h-1 rounded-lg">
-                  <div
-                    className={`w-[${Math.floor(progress)}%]${
-                      !isPlaying
-                        ? "transition-none"
-                        : "transition-all duration-100 ease-linear"
-                    } bg-red-500 h-1 rounded-lg`}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium">{`${formatTime(
-                  currentTime
-                )}`}</span>
+                )} */}
+                <button
+                  onClick={() => {
+                    handleTextToSpeech(note.content);
+                  }}
+                  className="p-2 flex gap-1 cursor-pointer rounded-full text-sm text-gray-700 hover:text-black"
+                >
+                   <Play size={20} />
+                  Play Audio
+                </button>
+                <button className="flex items-center gap-1 text-sm text-gray-700 hover:text-black">
+                  <Download size={16} />
+                  Download Audio
+                </button>
               </div>
-              <button className="mt-2 flex items-center gap-1 text-sm text-gray-700 hover:text-black">
-                <Download size={16} />
-                Download Audio
-              </button>
             </div>
 
             <div className="flex gap-2 mt-4">
